@@ -106,9 +106,15 @@ class Pim:
     def delete(self, delta):
         current = self.paths[self.index]
         self.paths.remove(current)
-        if not os.path.isdir('/tmp/pim-trash'):
-            os.mkdir('/tmp/pim-trash')
-        shutil.move(current, '/tmp/pim-trash')
+        try:
+            # lchmod doesn't seem to exist so use this ugly sequence instead
+            fd = os.open(current, os.O_RDONLY | os.O_NOFOLLOW)
+            os.fchmod(fd, 0600)
+            os.close(fd)
+            file = os.path.basename(current)
+            shutil.move(current, '/tmp/pim_trashed-%s' % file)
+        except (OSError, IOError) as e:
+            print e
         if len(self.paths) == 0:
             self.quit()
         else:
@@ -118,10 +124,12 @@ class Pim:
     def quit(self):
         if self.remember_position and len(self.paths):
             try:
-                f = open('pim-position', 'w')
-                f.writelines(self.paths[self.index])
-                f.close()
-            except IOError, e:
+                # the builtin open follows symlinks which is danger due to a race condition
+                fd = os.open('pim-position', os.O_WRONLY | os.O_NOFOLLOW | os.O_CREAT, 0600)
+                os.fchmod(fd, 0600)
+                with os.fdopen(fd, 'w') as f:
+                    f.writelines(self.paths[self.index])
+            except (OSError, IOError) as e:
                 print e
         gtk.main_quit()
 
