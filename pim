@@ -139,8 +139,23 @@ class Pim:
 
 
     def scroll(self, scrolltype, horizontal):
-        self.scrolled_win.emit('scroll-child', scrolltype, horizontal)
+        if horizontal:
+            adj = self.scrolled_win.get_hadjustment()
+        else:
+            adj = self.scrolled_win.get_vadjustment()
 
+        view_size = adj.get_page_size()
+        value = adj.get_value()
+        max = adj.get_upper() - view_size
+
+        if scrolltype == gtk.SCROLL_STEP_FORWARD:
+            adj.set_value(max if (value + 20) > max else value + 20)
+        elif scrolltype == gtk.SCROLL_STEP_BACKWARD:
+            adj.set_value(0 if (value - 20) < 0 else value - 20)
+        elif scrolltype == gtk.SCROLL_START:
+            adj.set_value(0)
+        elif scrolltype == gtk.SCROLL_END:
+            adj.set_value(max)
 
     def toggle_slideshow(self):
         self.slideshow = not self.slideshow
@@ -340,11 +355,13 @@ class Pim:
         self.sRatio = float(self.sWidth) / float(self.sHeight)
 
         self.win = gtk.Window()
+        self.win.set_resizable(True)
+        self.win.set_property('allow-shrink', True)
         self.win.connect('destroy', gtk.main_quit)
         self.win.connect("key_press_event", self.handle_key_press)
 
         self.scrolled_win = gtk.ScrolledWindow()
-        self.scrolled_win.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.scrolled_win.set_policy(gtk.POLICY_NEVER, gtk.POLICY_NEVER)
         self.win.add(self.scrolled_win)
 
         viewport = gtk.Viewport()
