@@ -131,7 +131,11 @@ class Pim:
                     f.writelines(self.paths[self.index])
             except (OSError, IOError) as e:
                 print e
-        gtk.main_quit()
+        try:
+            gtk.main_quit()
+        except RuntimeError:
+            import sys
+            sys.exit(1)
 
 
     def scroll(self, scrolltype, horizontal):
