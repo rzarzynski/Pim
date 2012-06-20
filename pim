@@ -220,20 +220,29 @@ class Pim:
 
 
     def move_index(self, delta):
-        self.index = (self.index + delta) % len(self.paths)
+        dst_idx = self.index + delta
+        while len(self.paths):
+            self.index = dst_idx % len(self.paths)
+            path = self.paths[self.index]
+            try:
+                self.pixbufOriginal = gdk.pixbuf_new_from_file(path)
+                break
+            except glib.GError as e:
+                self.paths.remove(path)
+                print e
+        else:
+            self.quit()
 
-        #reshuffle on wrap-around
-        if self.random and self.index is 0 and delta > 0:
-            shuffle(self.paths)
-
-        path = self.paths[self.index]
-        self.pixbufOriginal = gdk.pixbuf_new_from_file(path)
         if not self.zoom_lock:
             if self.fullscreen:
                 self.zoom_percent = self.get_fullscreen_zoom_percent()
             else:
                 self.zoom_percent = 1
         self.update_image()
+
+        #reshuffle on wrap-around
+        if self.random and self.index is 0 and delta > 0:
+            shuffle(self.paths)
 
         self.scroll(gtk.SCROLL_START, False)
         self.scroll(gtk.SCROLL_START, True)
