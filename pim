@@ -41,6 +41,7 @@ class Pim:
         self.fullscreen = False
         self.slideshow = False
         self.slideshow_delay = 5
+        self.scroll_step = 20
         self.random = False
         self.remember_position = True
         self.zoom_lock = False
@@ -115,7 +116,7 @@ class Pim:
             shutil.move(current, '/tmp/pim_trashed-%s' % file)
         except (OSError, IOError) as e:
             print e
-        if len(self.paths) == 0:
+        if not self.paths:
             self.quit()
         else:
             self.move_index(delta)
@@ -125,7 +126,7 @@ class Pim:
         if self.remember_position and len(self.paths):
             try:
                 # the builtin open follows symlinks which is danger due to a race condition
-                fd = os.open('pim-position', os.O_WRONLY | os.O_NOFOLLOW | os.O_CREAT, 0600)
+                fd = os.open('pim-position', os.O_WRONLY | os.O_NOFOLLOW | os.O_TRUNC | os.O_CREAT, 0600)
                 os.fchmod(fd, 0600)
                 with os.fdopen(fd, 'w') as f:
                     f.writelines(self.paths[self.index])
@@ -145,17 +146,20 @@ class Pim:
             adj = self.scrolled_win.get_vadjustment()
 
         view_size = adj.get_page_size()
-        value = adj.get_value()
-        max = adj.get_upper() - view_size
+        val_cur = adj.get_value()
+        val_max = adj.get_upper() - view_size
 
         if scrolltype == gtk.SCROLL_STEP_FORWARD:
-            adj.set_value(max if (value + 20) > max else value + 20)
+            val_dst = min(val_cur + self.scroll_step, val_max)
         elif scrolltype == gtk.SCROLL_STEP_BACKWARD:
-            adj.set_value(0 if (value - 20) < 0 else value - 20)
+            val_dst = max(val_cur - self.scroll_step, 0)
         elif scrolltype == gtk.SCROLL_START:
-            adj.set_value(0)
+            val_dst = 0
         elif scrolltype == gtk.SCROLL_END:
-            adj.set_value(max)
+            val_dst = val_max
+
+        adj.set_value(val_dst)
+
 
     def toggle_slideshow(self):
         self.slideshow = not self.slideshow
@@ -262,7 +266,8 @@ class Pim:
         self.scroll(gtk.SCROLL_START, False)
         self.scroll(gtk.SCROLL_START, True)
 
-        return True #for the slideshow
+        #for the slideshow
+        return True
 
 
     def parse_args(self):
@@ -301,8 +306,8 @@ class Pim:
                 try:
                     f = open('pim-position')
                     single = f.read()
-                except IOError, e:
-                    print e
+                except IOError:
+                    pass
 
         #add everything
         self.paths = []
@@ -358,7 +363,7 @@ class Pim:
         self.win.set_resizable(True)
         self.win.set_property('allow-shrink', True)
         self.win.connect('destroy', gtk.main_quit)
-        self.win.connect("key_press_event", self.handle_key_press)
+        self.win.connect('key-press-event', self.handle_key_press)
 
         self.scrolled_win = gtk.ScrolledWindow()
         self.scrolled_win.set_policy(gtk.POLICY_NEVER, gtk.POLICY_NEVER)
