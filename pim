@@ -45,7 +45,6 @@ class Pim:
         self.scroll_step = 20
         self.random = False
         self.recursive = False
-        self.remember_position = True
         self.zoom_lock = False
 
         self.binds = (
@@ -123,8 +122,8 @@ class Pim:
             self.move_index(delta)
 
 
-    def quit(self):
-        if self.remember_position and len(self.paths):
+    def quit(self, remember_position = False):
+        if remember_position and len(self.paths):
             try:
                 # the builtin open follows symlinks which is danger due to a race condition
                 fd = os.open('pim-position', os.O_WRONLY | os.O_NOFOLLOW | os.O_TRUNC | os.O_CREAT, 0600)
@@ -324,7 +323,7 @@ class Pim:
                 single = os.path.abspath(args[0])
                 directory = os.path.dirname(single)
                 args = (directory,)
-            elif os.path.isdir(arg) and self.remember_position:
+            elif os.path.isdir(arg):
                 try:
                     f = open('pim-position')
                     single = f.read()
