@@ -49,56 +49,55 @@ class Pim:
         self.zoom_lock = False
 
         self.binds = (
-            #(modifer, key, function, args)
-            #supported modifiers: gdk.SHIFT_MASK, gdk.CONTROL_MASK, gdk.MOD1_MASK (alt key)
-            (0,              keys.q,     self.quit),
-            (0,              keys.f,     self.toggle_fullscreen),
+            #(cmd, function, args)
+            ('q',           self.quit),
+            ('f',           self.toggle_fullscreen),
 
             #if True, scroll in the horizontal direction.
-            (0,              keys.h,     self.scroll, gtk.SCROLL_STEP_BACKWARD, True),
-            (0,              keys.j,     self.scroll, gtk.SCROLL_STEP_FORWARD, False),
-            (0,              keys.k,     self.scroll, gtk.SCROLL_STEP_BACKWARD, False),
-            (0,              keys.l,     self.scroll, gtk.SCROLL_STEP_FORWARD, True),
+            ('h',           self.scroll, gtk.SCROLL_STEP_BACKWARD, True),
+            ('j',           self.scroll, gtk.SCROLL_STEP_FORWARD, False),
+            ('k',           self.scroll, gtk.SCROLL_STEP_BACKWARD, False),
+            ('l',           self.scroll, gtk.SCROLL_STEP_FORWARD, True),
 
-            (gdk.SHIFT_MASK, keys.H,     self.scroll, gtk.SCROLL_PAGE_BACKWARD, True),
-            (gdk.SHIFT_MASK, keys.J,     self.scroll, gtk.SCROLL_PAGE_FORWARD, False),
-            (gdk.SHIFT_MASK, keys.K,     self.scroll, gtk.SCROLL_PAGE_BACKWARD, False),
-            (gdk.SHIFT_MASK, keys.L,     self.scroll, gtk.SCROLL_PAGE_FORWARD, True),
+            ('H',           self.scroll, gtk.SCROLL_PAGE_BACKWARD, True),
+            ('J',           self.scroll, gtk.SCROLL_PAGE_FORWARD, False),
+            ('K',           self.scroll, gtk.SCROLL_PAGE_BACKWARD, False),
+            ('L',           self.scroll, gtk.SCROLL_PAGE_FORWARD, True),
 
-            (0,              keys.Left,  self.scroll, gtk.SCROLL_STEP_BACKWARD, True),
-            (0,              keys.Down,  self.scroll, gtk.SCROLL_STEP_FORWARD, False),
-            (0,              keys.Up,    self.scroll, gtk.SCROLL_STEP_BACKWARD, False),
-            (0,              keys.Right, self.scroll, gtk.SCROLL_STEP_FORWARD, True),
+            ('<left>',      self.scroll, gtk.SCROLL_STEP_BACKWARD, True),
+            ('<down>',      self.scroll, gtk.SCROLL_STEP_FORWARD, False),
+            ('<up>',        self.scroll, gtk.SCROLL_STEP_BACKWARD, False),
+            ('<right>',     self.scroll, gtk.SCROLL_STEP_FORWARD, True),
 
-            (0,              keys.w,     self.scroll, gtk.SCROLL_STEP_BACKWARD, False),
-            (0,              keys.a,     self.scroll, gtk.SCROLL_STEP_BACKWARD, True),
-            (0,              keys.s,     self.scroll, gtk.SCROLL_STEP_FORWARD, False),
-            (0,              keys.d,     self.scroll, gtk.SCROLL_STEP_FORWARD, True),
+            ('w',           self.scroll, gtk.SCROLL_STEP_BACKWARD, False),
+            ('a',           self.scroll, gtk.SCROLL_STEP_BACKWARD, True),
+            ('s',           self.scroll, gtk.SCROLL_STEP_FORWARD, False),
+            ('d',           self.scroll, gtk.SCROLL_STEP_FORWARD, True),
 
-            (gdk.SHIFT_MASK, keys.W,     self.scroll, gtk.SCROLL_PAGE_BACKWARD, False),
-            (gdk.SHIFT_MASK, keys.A,     self.scroll, gtk.SCROLL_PAGE_BACKWARD, True),
-            (gdk.SHIFT_MASK, keys.S,     self.scroll, gtk.SCROLL_PAGE_FORWARD, False),
-            (gdk.SHIFT_MASK, keys.D,     self.scroll, gtk.SCROLL_PAGE_FORWARD, True),
+            ('W',           self.scroll, gtk.SCROLL_PAGE_BACKWARD, False),
+            ('A',           self.scroll, gtk.SCROLL_PAGE_BACKWARD, True),
+            ('S',           self.scroll, gtk.SCROLL_PAGE_FORWARD, False),
+            ('D',           self.scroll, gtk.SCROLL_PAGE_FORWARD, True),
 
-            (0,              keys.g,     self.scroll, gtk.SCROLL_START, False),
-            (gdk.SHIFT_MASK, keys.G,     self.scroll, gtk.SCROLL_END, False),
+            ('g',           self.scroll, gtk.SCROLL_START, False),
+            ('G',           self.scroll, gtk.SCROLL_END, False),
 
-            (gdk.SHIFT_MASK, keys.T,     self.zoom_delta, -.5),
-            (0,              keys.t,     self.zoom_delta, +.5),
-            (0,              keys.b,     self.move_index, -1),
-            (0,              keys.e,     self.toggle_slideshow),
-            (gdk.SHIFT_MASK, keys.X,     self.delete, -1),
-            (0,              keys.x,     self.delete, 0),
-            (0,              keys.z,     self.toggle_zoom_lock),
+            ('T',           self.zoom_delta, -.5),
+            ('t',           self.zoom_delta, +.5),
+            ('b',           self.move_index, -1),
+            ('e',           self.toggle_slideshow),
+            ('X',           self.delete, -1),
+            ('x',           self.delete, 0),
+            ('z',           self.toggle_zoom_lock),
 
-            (0,              keys._1,    self.zoom_to, 1),
-            (0,              keys._2,    self.zoom_to, 2),
-            (0,              keys._3,    self.zoom_to, 3),
+            ('<minus>1',    self.zoom_to, 1),
+            ('<minus>2',    self.zoom_to, 2),
+            ('<minus>3',    self.zoom_to, 3),
             #back to fullscreen
-            (0,              keys._5,    self.zoom_to, 0),
+            ('<minus>5',    self.zoom_to, 0),
 
-            (0,              keys.space, self.move_index, 1),
-            (gdk.SHIFT_MASK, keys.space, self.move_index, -1),
+            ('<space>',     self.move_index, 1),
+            ('<SPACE>',     self.move_index, -1),
             )
 
 
@@ -363,17 +362,48 @@ class Pim:
         self.win.window.set_cursor(None)
 
 
-    def handle_key_press(self, widget, event):
-        #ignore everything but shift, control, and alt modifiers
-        state = event.state & (gdk.SHIFT_MASK | gdk.CONTROL_MASK | gdk.MOD1_MASK)
-        keyval = event.keyval
-        for bind in self.binds:
-            if keyval == bind[1] and state == bind[0]:
-                funk = bind[2]
-                args = bind[3:]
+    def try_exec_cmd(self, cmd, times, fltr_func = None):
+        fltd_binds = filter(fltr_func or (lambda bind: bind[0] == cmd), self.binds)
+
+        if len(fltd_binds) == 1:
+            funk = fltd_binds[0][1]
+            args = fltd_binds[0][2:]
+
+            while times > 0:
                 funk(*args)
-                return
-        print event
+                times = times - 1
+
+        return fltd_binds
+
+
+    def key_handle_press(self, widget, ev):
+        kv = ev.keyval
+        if kv == keys.Shift_L or kv == keys.Shift_R:
+            return
+        elif kv == keys.BackSpace:
+            self.key_cmd = self.key_cmd[:-1]
+        elif kv == keys.Escape:
+            self.key_cmd = []
+        else:
+            kn = gdk.keyval_name(kv)
+            if len(kn) > 1:
+                kn = '<%s>' % (ev.state & gdk.SHIFT_MASK and kn.upper() or kn.lower())
+            self.key_cmd.append(kn)
+
+            pos = 0
+            for elem in self.key_cmd:
+                if not elem.isdigit():
+                    break
+                pos = pos + 1
+
+            tms_prt = self.key_cmd[:pos]
+            tms = int(''.join(tms_prt) or 1)
+            cmd_prt = self.key_cmd[pos:]
+            cmd = str(''.join(cmd_prt))
+
+            if cmd and self.try_exec_cmd(cmd, tms):
+                self.key_cmd = []
+            return
 
 
     def main(self):
@@ -384,6 +414,7 @@ class Pim:
         self.sHeight = screen.get_height()
         self.sRatio = float(self.sWidth) / float(self.sHeight)
 
+        self.key_cmd = []
         self.cur_timer_id = glib.timeout_add_seconds(self.cur_hide_delay, self.cur_hide)
 
         self.win = gtk.Window()
@@ -391,7 +422,7 @@ class Pim:
         self.win.set_property('allow-shrink', True)
         self.win.add_events(gtk.gdk.KEY_PRESS_MASK | gtk.gdk.POINTER_MOTION_MASK)
         self.win.connect('destroy', gtk.main_quit)
-        self.win.connect('key-press-event', self.handle_key_press)
+        self.win.connect('key-press-event', self.key_handle_press)
         self.win.connect('motion-notify-event', self.cur_handle_move)
 
         self.scrolled_win = gtk.ScrolledWindow()
