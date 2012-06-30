@@ -50,6 +50,8 @@ class Pim:
         self.binds = (
             #(cmd, function, args)
             ('q',           self.quit),
+            ('ZQ',          self.quit),
+            ('ZZ',          self.quit, True),
             ('f',           self.toggle_fullscreen),
 
             #if True, scroll in the horizontal direction.
@@ -78,7 +80,7 @@ class Pim:
             ('S',           self.scroll, gtk.SCROLL_PAGE_FORWARD, False),
             ('D',           self.scroll, gtk.SCROLL_PAGE_FORWARD, True),
 
-            ('g',           self.scroll, gtk.SCROLL_START, False),
+            ('gg',          self.scroll, gtk.SCROLL_START, False),
             ('G',           self.scroll, gtk.SCROLL_END, False),
 
             ('T',           self.zoom_delta, -.5),
