@@ -275,8 +275,8 @@ class Pim:
     def parse_args(self):
         usage = "usage: %prog [options] path1 [path2 path3 ...]"
         parser = OptionParser(usage=usage)
-        parser.add_option("-r", "--random", action="store_true", dest="random", help="randomize filelist", default=self.random)
-        parser.add_option("-R", "--no-random", action="store_false",   dest="random", help="don't randomize")
+        parser.add_option("-S", "--shuffle", action="store_true", dest="random", help="randomize filelist", default=self.random)
+        parser.add_option("-s", "--no-shuffle", action="store_false", dest="random", help="don't randomize")
         (options, args) = parser.parse_args()
         self.random = options.random
 
