@@ -218,17 +218,17 @@ class Pim:
 
 
     def resize_window(self, pbfWidth, pbfHeight):
-        #this doesn't work well with the scrollbars. I don't know if I just need to call some random function or if it's a gtk bug.
-        #http://www.gtkforums.com/about6831.html
-        winWidth = pbfWidth if pbfWidth < self.sWidth else self.sWidth
-        winHeight = pbfHeight if pbfHeight < self.sHeight else self.sHeight
-
+        winWidth  = min(pbfWidth, self.sWidth)
+        winHeight = min(pbfHeight, self.sHeight)
         self.win.resize(winWidth, winHeight)
 
 
     def update_title(self):
-        self.win.set_title("pim %d/%d %d%% %s%s" % (self.index, len(self.paths),
-            self.zoom_percent * 100, self.paths[self.index], ' [slideshow]' if self.slideshow else ''))
+        self.win.set_title("pim %d/%d %d%% %s%s" % (
+            self.index,
+            len(self.paths),
+            self.zoom_percent * 100,
+            self.paths[self.index], ' [slideshow]' if self.slideshow else ''))
 
 
     def zoom_delta(self, delta):
