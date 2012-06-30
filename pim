@@ -44,6 +44,7 @@ class Pim:
         self.cur_hide_delay = 2
         self.scroll_step = 20
         self.random = False
+        self.recursive = False
         self.remember_position = True
         self.zoom_lock = False
 
@@ -277,8 +278,11 @@ class Pim:
         parser = OptionParser(usage=usage)
         parser.add_option("-S", "--shuffle", action="store_true", dest="random", help="randomize filelist", default=self.random)
         parser.add_option("-s", "--no-shuffle", action="store_false", dest="random", help="don't randomize")
+        parser.add_option("-R", "--recursion", action="store_true", dest="recursive", help="scan for images recursively", default=self.recursive)
+        parser.add_option("-r", "--no-recursion", action="store_false", dest="recursive", help="don't scan recursively")
         (options, args) = parser.parse_args()
         self.random = options.random
+        self.recursive = options.recursive
 
         if len(args) is 0:
             parser.error('need at least one path!')
@@ -289,6 +293,23 @@ class Pim:
 
     def populate(self, args):
         ''' Generate a list of paths from the given arguments '''
+
+        def add_everything(paths, first_loop = True):
+            dirs  = []
+            files = []
+            for path in paths:
+                #remove unsupported files
+                if os.path.isfile(path) and mimetypes.guess_type(path)[0] in types:
+                    files.append(path)
+                elif os.path.isdir(path):
+                    dirs.append(path)
+            files.sort()
+            self.paths.extend(files)
+            if not self.recursive and not first_loop:
+                return
+            for dir in dirs:
+                dir_items = (os.path.join(dir, item) for item in os.listdir(dir))
+                add_everything(dir_items, False)
 
         #get supported mimetypes
         types = []
@@ -313,19 +334,8 @@ class Pim:
 
         #add everything
         self.paths = []
-        for arg in args:
-            path = os.path.abspath(arg)
-            if os.path.isfile(path):
-                self.paths.append(path)
-            elif os.path.isdir(path):
-                paths = [os.path.join(path, x) for x in os.listdir(path)]
-                paths.sort()
-                self.paths.extend(paths)
-            else:
-                print "%s is not a valid path!" % arg
-
-        #remove unsupported files
-        self.paths = [path for path in self.paths if mimetypes.guess_type(path)[0] in types]
+        args = (os.path.abspath(arg) for arg in args)
+        add_everything(args)
 
         #shuffle
         if self.random:
