@@ -420,6 +420,7 @@ class Pim:
 
         self.win = gtk.Window()
         self.win.set_resizable(True)
+        self.win.set_position(gtk.WIN_POS_CENTER_ALWAYS);
         self.win.set_property('allow-shrink', True)
         self.win.add_events(gtk.gdk.KEY_PRESS_MASK | gtk.gdk.POINTER_MOTION_MASK)
         self.win.connect('destroy', gtk.main_quit)
